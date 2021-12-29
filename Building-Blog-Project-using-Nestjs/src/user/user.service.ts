@@ -53,20 +53,60 @@ export class UserService {
   // }
 
 
-  findOne(id:number):Observable<any>{
-    return from(this.userRepo.findOne(id))
+  //old findone method for
+  // findOne(id:number):Observable<any>{
+  //       return from(this.userRepo.findOne(id))
+
+  // }
+
+  findOne(id:number):Observable<CreateUserDto>{
+    return from(this.userRepo.findOne(id)).pipe(
+      map((user:CreateUserDto)=>{
+        const {password, ...result} = user;
+        return result;
+      }),
+      catchError(err => throwError(err.message))
+    )
   }
 
+  // ---old findAll method -------
+  // findAll(): Observable<CreateUserDto[]> {
+  //   return from(this.userRepo.find({}))
+  // }
+
+
   findAll(): Observable<CreateUserDto[]> {
-    return from(this.userRepo.find({}));
+    return from(this.userRepo.find({})).pipe(
+      map((user:CreateUserDto[])=>{
+        user.forEach((v) =>{delete v.password})
+        return user;
+      })
+    )
   }
 
 
   updateOne(id:number , user:CreateUserDto): Observable<any> {
-    return from(this.userRepo.update(id , user))
+
+    // we do not want someone to change my email and password
+
+    delete user.email;
+    delete user.password;
+    return from(this.userRepo.update(id , user)).pipe(
+      switchMap(() => this.findOne(id))
+  );
+  }
+
+
+  // --- here we are returning string because it will return the JWT Token
+  
+  login(user: User): Observable<string> {
+    return
   }
 
   deleteOne(id: number): Observable<any> {
     return from(this.userRepo.delete(id));
   }
+
+
+
 }
