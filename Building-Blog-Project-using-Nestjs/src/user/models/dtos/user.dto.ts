@@ -7,19 +7,23 @@ export class CreateUserDto implements User {
 
     @IsString()
     @IsOptional()
-    public name: string;
+    public id?: number;
 
     @IsString()
     @IsOptional()
-    public username: string;
+    public name?: string;
+
+    @IsString()
+    @IsOptional()
+    public username?: string;
 
     @IsEmail()
     @IsOptional()
-    public email: string;
+    public email?: string;
 
     @IsString()
     @IsOptional()
-    password: string;
+    password?: string;
 
 
 }
