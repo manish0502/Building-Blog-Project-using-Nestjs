@@ -4,6 +4,7 @@ import { Observable, from, of } from 'rxjs';
 const bcrypt = require('bcrypt');
 import { User }  from '../user/models/user-interface';
 
+@Injectable()
 export class AuthService {
     constructor(private readonly jwtService: JwtService){}
 
@@ -12,12 +13,12 @@ export class AuthService {
   }
 
   hashPassword(passport:string): Observable<String>{
-     return 
+     return from<string>(bcrypt.hash(passport ,12))
   }
 
 
-  comparePassword(): Observable<any>{
-    return 
+  comparePassword(newPassword:string , hashPassword:string): Observable<any | boolean>{
+    return from(<any | boolean>bcrypt.comparePassword(newPassword ,hashPassword));
   }
 
 }

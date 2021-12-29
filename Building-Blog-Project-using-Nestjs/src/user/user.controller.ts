@@ -14,9 +14,9 @@ export class UserController {
 
     //----this is using interface User----------
     @Post()
-    create(@Body() user: User): Observable<User | Object> {
+    create(@Body() user: CreateUserDto): Observable<CreateUserDto | Object> {
         return this.userService.create(user).pipe(
-            map((user: User) => user),
+            map((user: CreateUserDto) => user),
             catchError(err => of({ error: err.message }))
         );
     }
@@ -32,23 +32,23 @@ export class UserController {
 
 
    @Get('/:id')
-   findOne(@Param('id') id:string):Observable<User | Object> { 
+   findOne(@Param('id') id:string):Observable<CreateUserDto | Object> { 
      return this.userService.findOne(Number(id))
    
    }
 
     @Get()
-    findAll():Observable<User[]>{
+    findAll():Observable<CreateUserDto[]>{
         return this.userService.findAll()
     }
 
     @Put('/:id')
-    updateOne(@Param('id') id:string , @Body() user:User):Observable<any>{
+    updateOne(@Param('id') id:string , @Body() user:CreateUserDto):Observable<any>{
        return this.userService.updateOne(Number(id) , user)
     }
 
     @Delete('/:id')
-    deleteOne(@Param('id') id:string):Observable<User | Object>{
+    deleteOne(@Param('id') id:string):Observable<CreateUserDto | Object>{
     return  this.userService.deleteOne(Number(id))
         
     }
