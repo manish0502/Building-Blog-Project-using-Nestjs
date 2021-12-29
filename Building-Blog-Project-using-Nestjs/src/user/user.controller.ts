@@ -1,4 +1,4 @@
-import { Controller ,Post ,Body ,Get ,Patch , Put , Delete ,Param ,NotFoundException} from '@nestjs/common';
+import { Controller ,Post ,Body ,Get ,Patch , Put , Delete ,Param ,NotFoundException ,Query} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './models/user-interface'
 import { Observable, of } from 'rxjs';
@@ -13,12 +13,31 @@ export class UserController {
 
 
     //----this is using interface User----------
+    // @Post()
+    // create(@Body() user: CreateUserDto): Observable<CreateUserDto | Object> {
+    //     return this.userService.create(user).pipe(
+    //         map((user: CreateUserDto) => user),
+    //         catchError(err => of({ error: err.message }))
+    //     );
+    // }
+
+
     @Post()
-    create(@Body() user: CreateUserDto): Observable<CreateUserDto | Object> {
+    create(@Body() user: User): Observable<CreateUserDto | Object> {
         return this.userService.create(user).pipe(
             map((user: CreateUserDto) => user),
             catchError(err => of({ error: err.message }))
         );
+    }
+
+
+    @Post('login')
+    login(@Body() body:CreateUserDto): Observable<Object> {
+      return this.userService.login(body).pipe(
+        map((jwt:string)=>{
+          return { access_token: jwt }
+        })
+      ) 
     }
 
   // ------This is Using DTO files------------------
@@ -37,6 +56,11 @@ export class UserController {
    
    }
 
+
+   //endPoint -> http://localhost:3000/users?email=ranjeet423@gmail.com
+
+  
+
     @Get()
     findAll():Observable<CreateUserDto[]>{
         return this.userService.findAll()
@@ -52,6 +76,12 @@ export class UserController {
     return  this.userService.deleteOne(Number(id))
         
     }
+
+
+    // @Get()
+    // findUserByMail(@Query('email') email: string){
+    //      return this.userService.findUserByMail(email)
+    // }
 
 
 
