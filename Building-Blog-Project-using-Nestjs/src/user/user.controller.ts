@@ -1,6 +1,6 @@
 import { Controller ,Post ,Body ,Get ,Patch , Put , Delete ,Param ,NotFoundException ,Query ,UseGuards} from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from './models/user-interface'
+import { User ,UserRole} from './models/user-interface'
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { CreateUserDto } from './models/dtos/user.dto'
@@ -66,7 +66,7 @@ export class UserController {
    //endPoint -> http://localhost:3000/users?email=ranjeet423@gmail.com
 
   
-   @hasRoles('Admin')
+   @hasRoles(UserRole.ADMIN)
    @UseGuards(JwtAuthGuard, RolesGuard)
     @Get()
     findAll():Observable<CreateUserDto[]>{

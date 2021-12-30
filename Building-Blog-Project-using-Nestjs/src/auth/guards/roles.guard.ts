@@ -2,8 +2,10 @@ import { Injectable, CanActivate, ExecutionContext ,Inject, forwardRef} from '@n
 import { Reflector } from '@nestjs/core';
 import { UserService } from 'src/user/user.service';
 import { Observable } from "rxjs";
-import { hasRoles } from '../decorator/roles.decorator';
+//import { hasRoles } from '../decorator/roles.decorator';
 import { CreateUserDto } from 'src/user/models/dtos/user.dto';
+import { map } from "rxjs/operators";
+//import { User } from 'src/user/models/user-interface';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -14,14 +16,31 @@ export class RolesGuard implements CanActivate {
     ) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    const roles = this.reflector.get<string[]>('roles', context.getHandler());
+    const roles = this.reflector.get<string[]>(
+      'roles', 
+      context.getHandler()
+    );
     if (!roles) {
       return true;
     }
     const request = context.switchToHttp().getRequest();
     console.log(request)
-    const user:CreateUserDto = request.user;
+    const user:CreateUserDto = request.user.user;
 
-   return true
+  
+
+   return this.userService.findOne(user.id).pipe(
+     map((user:CreateUserDto) =>{
+      const hasRole = () => roles.indexOf(user.role) > -1;
+      let hasPermission: boolean = false;
+      console.log(hasRole);
+      if (hasRole()) {
+        console.log('Has permision is true')
+          hasPermission = true;
+      };
+      return user && hasPermission;
+          
+     })
+   )
   }
 }

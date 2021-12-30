@@ -1,7 +1,7 @@
 
 import { IsEmail, IsString ,IsOptional } from 'class-validator';
 import { User } from '../user-interface';
-
+import { UserRole } from '../user-interface'
 
 export class CreateUserDto implements User {
 
@@ -26,4 +26,15 @@ export class CreateUserDto implements User {
     password?: string;
 
 
+    @IsOptional()
+    role?: UserRole;
+
+
 }
+
+// export enum UserRole {
+//     ADMIN = 'admin',
+//     CHIEFEDITOR = 'chiefeditor',    
+//     EDITOR = 'editor',
+//     USER = 'user'
+// }

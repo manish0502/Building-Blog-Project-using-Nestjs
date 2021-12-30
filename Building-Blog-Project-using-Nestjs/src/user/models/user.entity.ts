@@ -9,6 +9,9 @@ import {
   AfterUpdate,
 } from 'typeorm';
 
+
+import { UserRole } from '../models/user-interface'
+
 @Entity()
 export class UserEntity {
     
@@ -26,6 +29,10 @@ export class UserEntity {
 
   @Column({ select: false })
   password: string;
+
+
+  @Column({type: 'enum', enum: UserRole, default: UserRole.USER})
+  role: UserRole;
 
  
   @BeforeInsert()

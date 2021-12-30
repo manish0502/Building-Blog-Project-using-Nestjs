@@ -25,6 +25,7 @@ export class UserService {
         newUser.username = user.username;
         newUser.email = user.email;
         newUser.password = passwordHash;
+        newUser.role = user.role;
 
         return from(this.userRepo.save(newUser)).pipe(
           map((user: CreateUserDto) => {
