@@ -77,6 +77,18 @@ export class UserController {
     updateOne(@Param('id') id:string , @Body() user:CreateUserDto):Observable<any>{
        return this.userService.updateOne(Number(id) , user)
     }
+
+     //http://localhost:3000/users/21/role  , you can oly update if you have token generated as the admin
+
+    @hasRoles(UserRole.ADMIN)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put(':id/role')
+    updateRoleOfUser(@Param('id') id: string, @Body() user: CreateUserDto): Observable<User> {
+        return this.userService.updateRoleOfUser(Number(id), user);
+    }
+
+
+
     @hasRoles('Admin')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Delete('/:id')

@@ -137,7 +137,9 @@ export class UserService {
   deleteOne(id: number): Observable<any> {
     return from(this.userRepo.delete(id));
   }
-
+  updateRoleOfUser(id: number, user: CreateUserDto): Observable<any> {
+    return from(this.userRepo.update(id, user));
+}
 
 
 
