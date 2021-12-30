@@ -1,12 +1,18 @@
-import { Controller ,Post ,Body ,Get ,Patch , Put , Delete ,Param ,NotFoundException ,Query} from '@nestjs/common';
+import { Controller ,Post ,Body ,Get ,Patch , Put , Delete ,Param ,NotFoundException ,Query ,UseGuards} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './models/user-interface'
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { CreateUserDto } from './models/dtos/user.dto'
+import { hasRoles } from '../auth/decorator/roles.decorator'
+import { JwtAuthGuard } from '../auth/guards/jwt.guard'
+import { RolesGuard } from '../auth/guards/roles.guard'
 
 
-@Controller('users')
+
+
+
+@Controller('users') 
 export class UserController {
     constructor(private userService: UserService) { }
 
@@ -60,7 +66,8 @@ export class UserController {
    //endPoint -> http://localhost:3000/users?email=ranjeet423@gmail.com
 
   
-
+   @hasRoles('Admin')
+   @UseGuards(JwtAuthGuard, RolesGuard)
     @Get()
     findAll():Observable<CreateUserDto[]>{
         return this.userService.findAll()
@@ -70,7 +77,8 @@ export class UserController {
     updateOne(@Param('id') id:string , @Body() user:CreateUserDto):Observable<any>{
        return this.userService.updateOne(Number(id) , user)
     }
-
+    @hasRoles('Admin')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Delete('/:id')
     deleteOne(@Param('id') id:string):Observable<CreateUserDto | Object>{
     return  this.userService.deleteOne(Number(id))

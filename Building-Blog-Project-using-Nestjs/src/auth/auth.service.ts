@@ -40,7 +40,6 @@ generateJWT(user: User): Observable <string> {
 }
 
 hashPassword(password: string): Observable <string> {
- 
     return from<string>(bcrypt.hash(password, 12));
 }
 
