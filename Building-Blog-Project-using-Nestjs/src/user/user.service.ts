@@ -4,10 +4,15 @@ import { Repository } from 'typeorm';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './models/user.entity';
 import { CreateUserDto } from './models/dtos/user.dto';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, from, throwError, observable } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
-import { User } from './models/user-interface';
+import { User, UserRole } from './models/user-interface';
 import { AuthService } from 'src/auth/auth.service';
+import {
+  paginate,
+  Pagination,
+  IPaginationOptions,
+} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UserService {
@@ -25,7 +30,9 @@ export class UserService {
         newUser.username = user.username;
         newUser.email = user.email;
         newUser.password = passwordHash;
-        newUser.role = user.role;
+        //newUser.role = user.role;
+        newUser.role = UserRole.USER;
+
 
         return from(this.userRepo.save(newUser)).pipe(
           map((user: CreateUserDto) => {
@@ -82,11 +89,35 @@ export class UserService {
     );
   }
 
+  
+
+  paginate(options: IPaginationOptions):Observable<Pagination<CreateUserDto>>{
+    return from(paginate<CreateUserDto>(this.userRepo ,options)).pipe(
+      map((usersPageable: Pagination<CreateUserDto>)=>{
+        usersPageable.items.forEach(function (v) {delete v.password});
+        return usersPageable;
+      })
+    )
+  }
+
+
+//   paginate(options: IPaginationOptions): Observable<Pagination<CreateUserDto>> {
+//     return from(paginate<User>(this.userRepo, options)).pipe(
+//         map((usersPageable: Pagination<CreateUserDto>) => {
+//             usersPageable.items.forEach(function (v) {delete v.password});
+//             return usersPageable;
+//         })
+//     )
+// }
+
+
   updateOne(id: number, user: CreateUserDto): Observable<any> {
     // we do not want someone to change my email and password
 
     delete user.email;
     delete user.password;
+    delete user.role;
+    
     return from(this.userRepo.update(id, user)).pipe(
       switchMap(() => this.findOne(id)),
     );
