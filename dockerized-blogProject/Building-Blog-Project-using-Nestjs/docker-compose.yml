@@ -2,35 +2,28 @@ version: "3.8"
 services:
     api:
         # image: thomas-oliver/nestjs-dockerized 
-
-        container_name: nestjs_pos_api
-        image: nestjs-pos-api-dev:1.0.0
         build:
-            dockerfile: ./Dockerfile
+            dockerfile: Dockerfile
             context: .
         depends_on: 
             - postgres
-        environment: 
-            DATABASE_URL: postgres://user:password@postgres:5432/blog
-            NODE_ENV: development
-            PORT: 3000
+        env_file:
+            - ./.env
+        # environment: 
+        #     DATABASE_URL: postgres://postgres:postgres@postgres:5432/blog
+        #     NODE_ENV: development
+        #     PORT: 3000
         ports:
             - "8080:3000"
-        networks:
-            - nesjs-postgres-network
+        
 
     postgres:
-        container_name: nestjs_pos_db
         image: postgres:10.4
         ports:
-            - "40000:5432"
-        networks:
-            - nesjs-postgres-network
-
-        environment: 
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: password
-            POSTGRES_DB: blog
-
-networks:
-    nesjs-postgres-network:
+            - "35000:5432"
+        env_file:
+            - ./.env
+        # environment: 
+        #     POSTGRES_USER: postgres
+        #     POSTGRES_PASSWORD: postgres
+        #     POSTGRES_DB: blog
