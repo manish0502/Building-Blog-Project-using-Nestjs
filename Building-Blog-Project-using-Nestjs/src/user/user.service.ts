@@ -8,6 +8,8 @@ import { Observable, from, throwError, observable } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { User, UserRole } from './models/user-interface';
 import { AuthService } from 'src/auth/auth.service';
+import { Like } from 'typeorm';
+
 import {
   paginate,
   Pagination,
@@ -32,7 +34,6 @@ export class UserService {
         newUser.password = passwordHash;
         //newUser.role = user.role;
         newUser.role = UserRole.USER;
-
 
         return from(this.userRepo.save(newUser)).pipe(
           map((user: CreateUserDto) => {
@@ -89,27 +90,76 @@ export class UserService {
     );
   }
 
-  
 
-  paginate(options: IPaginationOptions):Observable<Pagination<CreateUserDto>>{
-    return from(paginate<CreateUserDto>(this.userRepo ,options)).pipe(
-      map((usersPageable: Pagination<CreateUserDto>)=>{
-        usersPageable.items.forEach(function (v) {delete v.password});
+  //http://localhost:3000/users?page=3&limit=3
+
+  paginate(options: IPaginationOptions): Observable<Pagination<CreateUserDto>> {
+    return from(paginate<CreateUserDto>(this.userRepo, options)).pipe(
+      map((usersPageable: Pagination<CreateUserDto>) => {
+        usersPageable.items.forEach(function (v) {
+          delete v.password;
+        });
         return usersPageable;
-      })
-    )
+      }),
+    );
   }
 
 
-//   paginate(options: IPaginationOptions): Observable<Pagination<CreateUserDto>> {
-//     return from(paginate<User>(this.userRepo, options)).pipe(
-//         map((usersPageable: Pagination<CreateUserDto>) => {
-//             usersPageable.items.forEach(function (v) {delete v.password});
-//             return usersPageable;
-//         })
-//     )
-// }
+  // http://localhost:3000/users?username=rahul123&page=0
 
+  paginateFilterByUsername(
+    options: IPaginationOptions,
+    user: CreateUserDto,
+  ): Observable<Pagination<CreateUserDto>> {
+    //console.log(options)
+    return from(
+      
+      this.userRepo.findAndCount({
+        skip: Number(options.page) * Number(options.limit) || 0,
+        take: Number(options.limit) || 10,
+        order: { id: 'ASC' },
+        select: ['id', 'name', 'username', 'email', 'role'],
+        where: [{ username: Like(`%${user.username}%`) }],
+      }),
+    ).pipe(
+      map(([users, totalUsers]) => {
+        //console.log(users)
+        const usersPageable: Pagination<CreateUserDto> = {
+          items: users,
+          links: {
+            first: options.route + `?limit=${options.limit}`,
+            previous: options.route + ``,
+            next:
+              options.route +
+              `?limit=${options.limit}&page=${Number(options.page) + 1}`,
+            last:
+              options.route +
+              `?limit=${options.limit}&page=${Math.ceil(
+                totalUsers / Number(options.limit),
+              )}`,
+          },
+          meta: {
+            currentPage: Number(options.page),
+            itemCount: users.length,
+            itemsPerPage: Number(options.limit),
+            totalItems: totalUsers,
+            totalPages: Math.ceil(totalUsers / Number(options.limit)),
+          },
+        };
+
+        return usersPageable;
+      }),
+    );
+  }
+
+  //   paginate(options: IPaginationOptions): Observable<Pagination<CreateUserDto>> {
+  //     return from(paginate<User>(this.userRepo, options)).pipe(
+  //         map((usersPageable: Pagination<CreateUserDto>) => {
+  //             usersPageable.items.forEach(function (v) {delete v.password});
+  //             return usersPageable;
+  //         })
+  //     )
+  // }
 
   updateOne(id: number, user: CreateUserDto): Observable<any> {
     // we do not want someone to change my email and password
@@ -117,16 +167,13 @@ export class UserService {
     delete user.email;
     delete user.password;
     delete user.role;
-    
+
     return from(this.userRepo.update(id, user)).pipe(
       switchMap(() => this.findOne(id)),
     );
   }
 
   // --- here we are returning string because it will return the JWT Token
-
- 
- 
 
   login(user: CreateUserDto): Observable<string> {
     return this.validateUser(user.email, user.password).pipe(
@@ -141,8 +188,6 @@ export class UserService {
       }),
     );
   }
-
-
 
   validateUser(email: string, password: string): Observable<CreateUserDto> {
     return from(this.userRepo.findOne({ email })).pipe(
@@ -170,9 +215,5 @@ export class UserService {
   }
   updateRoleOfUser(id: number, user: CreateUserDto): Observable<any> {
     return from(this.userRepo.update(id, user));
-}
-
-
-
-
+  }
 }
